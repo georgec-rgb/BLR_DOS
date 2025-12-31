@@ -24,7 +24,7 @@ body {
   color:#222;
 }
 
-/* LOCATION BUTTON ---------------------------------- */
+/* LOCATION BUTTON */
 #locationBtn {
   position:fixed;
   right:20px;
@@ -41,7 +41,7 @@ body {
 }
 #locationBtn:hover { opacity:.9; }
 
-/* PRINT BUTTON ------------------------------------- */
+/* PRINT BUTTON */
 #printBtn {
   position:fixed;
   right:20px;
@@ -58,7 +58,7 @@ body {
 }
 #printBtn:hover { opacity:.9; }
 
-/* HEADER -------------------------------------------- */
+/* HEADER */
 #header-wrap {
   padding:10px 20px 0;
 }
@@ -72,7 +72,7 @@ body {
   margin-top:6px;
 }
 
-/* FILTER BAR ---------------------------------------- */
+/* FILTER BAR */
 #filters {
   position:sticky;
   top:0;
@@ -99,7 +99,7 @@ body {
   font-weight:600;
 }
 
-/* DEPARTMENT TITLE ---------------------------------- */
+/* DEPARTMENT TITLE */
 .dept-block {
   margin:28px 0 8px;
   padding:0 20px;
@@ -114,7 +114,7 @@ body {
   padding-bottom:3px;
 }
 
-/* TABLE AREA ---------------------------------------- */
+/* TABLE AREA */
 .table-wrap {
   width:100%;
   margin:0 0 25px;
@@ -122,7 +122,7 @@ body {
   box-sizing:border-box;
 }
 
-/* TABLE --------------------------------------------- */
+/* TABLE */
 table { 
   width:100%;
   border-collapse:collapse;
@@ -157,7 +157,7 @@ th:nth-child(13), td:nth-child(13){
 
 tr:nth-child(even) td { background:#fafafa; }
 
-/* PRINT FIX ----------------------------------------- */
+/* PRINT FIX */
 @media print {
   body { margin:0; padding:0; }
   #filters, #printBtn, #locationBtn, #header-wrap { display:none !important; }
@@ -173,19 +173,14 @@ tr:nth-child(even) td { background:#fafafa; }
 
 <body>
 
-<!-- ✨ LOCATION BUTTON -->
 <button id="locationBtn">OHL BLR Koramangala</button>
-
-<!-- 📄 PRINT BUTTON -->
 <button id="printBtn" onclick="window.print()">Print DOS</button>
 
-<!-- HEADER -->
 <div id="header-wrap">
   <img src="logo.png">
   <div id="main-title">Orange Health - Directory of Services (DOS)</div>
 </div>
 
-<!-- FILTERS -->
 <div id="filters">
   <input id="searchBox" placeholder="Search test / investigation / method...">
   <select id="deptFilter"><option value="">Department: All</option></select>
@@ -201,7 +196,6 @@ tr:nth-child(even) td { background:#fafafa; }
 <div id="dosContainer"></div>
 
 <script>
-
 /* ---- Frequency first letters ---- */
 function formatFrequency(freq){
   const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
@@ -247,7 +241,12 @@ fetch("data.json")
       grouped[id].nabl="Yes";
     }
 
-    grouped[id].investigations.add(row.investigation_name);
+    /* ---- FIX: If investigation is blank, use test name ---- */
+    const inv = (row.investigation_name && row.investigation_name.trim() !== "")
+                  ? row.investigation_name
+                  : row.test_name;
+    grouped[id].investigations.add(inv);
+
     grouped[id].methods.add(row.method_description || row.name);
   });
 
@@ -274,7 +273,7 @@ fetch("data.json")
     const city=cityFilter.value;
 
     const byDept={};
-    let rowNum = 1;
+    let rowNum=1;
 
     tests.forEach(t=>{
       const nablClean=String(t.nabl).trim().toLowerCase();
@@ -365,4 +364,3 @@ fetch("data.json")
 </script>
 </body>
 </html>
-
