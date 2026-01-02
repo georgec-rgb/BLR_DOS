@@ -84,7 +84,9 @@ body {
   gap:10px;
   flex-wrap:wrap;
 }
-#filters input, #filters select, #filters button {
+#filters input,
+#filters select,
+#filters button {
   padding:8px 12px;
   border-radius:8px;
   border:1px solid var(--oh-border);
@@ -123,7 +125,7 @@ body {
 }
 
 /* TABLE */
-table { 
+table {
   width:100%;
   border-collapse:collapse;
 }
@@ -155,18 +157,57 @@ th:nth-child(13), td:nth-child(13){
   text-align:center;
 }
 
-tr:nth-child(even) td { background:#fafafa; }
+tr:nth-child(even) td {
+  background:#fafafa;
+}
 
-/* PRINT FIX */
+/* ================= PRINT FIX ================= */
 @media print {
-  body { margin:0; padding:0; }
-  #filters, #printBtn, #locationBtn, #header-wrap { display:none !important; }
-  table { 
-    font-size:11px; 
+
+  /* Page margins */
+  @page {
+    margin: 12mm 10mm 18mm 10mm;
+  }
+
+  body {
+    margin:0;
+    padding:0;
+  }
+
+  /* Hide UI */
+  #filters,
+  #printBtn,
+  #locationBtn,
+  #header-wrap {
+    display:none !important;
+  }
+
+  table {
+    font-size:11px;
     page-break-inside:auto;
   }
-  tr { page-break-inside:avoid; page-break-after:auto; }
-  th { position:static; }
+
+  tr {
+    page-break-inside:avoid;
+    page-break-after:auto;
+  }
+
+  th {
+    position:static;
+  }
+
+  /* ✅ CUSTOM FOOTER (replaces URL) */
+  body::after {
+    content: "OHL BLR Koramangala";
+    position: fixed;
+    bottom: 6mm;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: #666;
+  }
 }
 </style>
 </head>
@@ -196,13 +237,14 @@ tr:nth-child(even) td { background:#fafafa; }
 <div id="dosContainer"></div>
 
 <script>
-/* ---- Frequency first letters ---- */
 function formatFrequency(freq){
   const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  return String(freq).split("").map((v,i)=> v==="1" ? days[i] : "").filter(Boolean).join(" ");
+  return String(freq).split("")
+    .map((v,i)=>v==="1"?days[i]:"")
+    .filter(Boolean)
+    .join(" ");
 }
 
-/* ---- Reset filters ---- */
 function resetFilters(){
   searchBox.value="";
   deptFilter.value="";
@@ -211,7 +253,6 @@ function resetFilters(){
   applyFilters();
 }
 
-/* ---- FETCH AND RENDER ---- */
 fetch("data.json")
 .then(r=>r.json())
 .then(data=>{
@@ -237,34 +278,23 @@ fetch("data.json")
         city:row.city,
         price:row.price
       };
-    } else if(String(row.is_nabl_accredited).trim().toLowerCase()==="yes"){
-      grouped[id].nabl="Yes";
     }
 
-    /* ---- FIX: If investigation is blank, use test name ---- */
-    const inv = (row.investigation_name && row.investigation_name.trim() !== "")
-                  ? row.investigation_name
-                  : row.test_name;
-    grouped[id].investigations.add(inv);
+    const inv = row.investigation_name && row.investigation_name.trim()
+      ? row.investigation_name
+      : row.test_name;
 
+    grouped[id].investigations.add(inv);
     grouped[id].methods.add(row.method_description || row.name);
   });
 
   const tests=Object.values(grouped);
 
   const depts=[...new Set(tests.map(t=>t.department))].sort();
-  depts.forEach(d=>{
-    const o=document.createElement("option");
-    o.value=d; o.textContent=d;
-    deptFilter.appendChild(o);
-  });
+  depts.forEach(d=>deptFilter.add(new Option(d,d)));
 
   const cities=[...new Set(tests.map(t=>t.city))].sort();
-  cities.forEach(c=>{
-    const o=document.createElement("option");
-    o.value=c; o.textContent=c;
-    cityFilter.appendChild(o);
-  });
+  cities.forEach(c=>cityFilter.add(new Option(c,c)));
 
   window.applyFilters=function(){
     const q=searchBox.value.toLowerCase();
@@ -276,63 +306,28 @@ fetch("data.json")
     let rowNum=1;
 
     tests.forEach(t=>{
-      const nablClean=String(t.nabl).trim().toLowerCase();
-
       if(dept && t.department!==dept) return;
-      if(nabl && nablClean!==nabl) return;
+      if(nabl && String(t.nabl).toLowerCase()!==nabl) return;
       if(city && t.city!==city) return;
 
       if(q && !(
         t.test_name.toLowerCase().includes(q) ||
-        [...t.investigations].join(", ").toLowerCase().includes(q) ||
-        [...t.methods].join(", ").toLowerCase().includes(q) ||
-        t.sample.toLowerCase().includes(q)
+        [...t.investigations].join().toLowerCase().includes(q) ||
+        [...t.methods].join().toLowerCase().includes(q)
       )) return;
 
-      if(!byDept[t.department]) byDept[t.department]=[];
-      byDept[t.department].push({...t, _rowNumber: rowNum++});
+      (byDept[t.department]??=[]).push({...t,_rowNumber:rowNum++});
     });
 
-    const container=document.getElementById("dosContainer");
-    container.innerHTML="";
+    dosContainer.innerHTML="";
 
     Object.keys(byDept).sort().forEach(dep=>{
-      const block=document.createElement("div");
-      block.className="dept-block";
-      block.innerHTML=`<div class="dept-title">${dep}</div>`;
-      container.appendChild(block);
+      dosContainer.insertAdjacentHTML("beforeend",
+        `<div class="dept-block"><div class="dept-title">${dep}</div></div>`
+      );
 
-      const wrap=document.createElement("div");
-      wrap.className="table-wrap";
-
-      wrap.innerHTML=`
-      <table>
-      <thead>
+      const rows=byDept[dep].map(t=>`
         <tr>
-          <th>#</th>
-          <th>Test Name</th>
-          <th>Investigations</th>
-          <th>Methods</th>
-          <th>Sample</th>
-          <th>Container</th>
-          <th>Fasting</th>
-          <th>NABL</th>
-          <th>Freq</th>
-          <th>TAT</th>
-          <th>Lab</th>
-          <th>City</th>
-          <th>₹</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      </table>`;
-
-      const tbody=wrap.querySelector("tbody");
-
-      byDept[dep].forEach(t=>{
-        const nablClean=String(t.nabl).trim().toLowerCase()==="yes" ? "Yes" : "No";
-        const tr=document.createElement("tr");
-        tr.innerHTML=`
           <td>${t._rowNumber}</td>
           <td>${t.test_name}</td>
           <td>${[...t.investigations].join(", ")}</td>
@@ -340,17 +335,29 @@ fetch("data.json")
           <td>${t.sample}</td>
           <td>${t.container}</td>
           <td>${t.fasting}</td>
-          <td>${nablClean}</td>
+          <td>${String(t.nabl).toLowerCase()==="yes"?"Yes":"No"}</td>
           <td>${t.frequency}</td>
           <td>${t.tat}</td>
           <td>${t.lab}</td>
           <td>${t.city}</td>
           <td>${t.price}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+        </tr>`).join("");
 
-      container.appendChild(wrap);
+      dosContainer.insertAdjacentHTML("beforeend",`
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Test Name</th><th>Investigations</th>
+                <th>Methods</th><th>Sample</th><th>Container</th>
+                <th>Fast</th><th>NABL</th><th>Freq</th>
+                <th>TAT</th><th>Lab</th><th>City</th><th>₹</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `);
     });
   };
 
@@ -362,6 +369,6 @@ fetch("data.json")
   applyFilters();
 });
 </script>
+
 </body>
 </html>
-
