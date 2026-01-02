@@ -24,13 +24,17 @@ body {
   color:#222;
 }
 
-/* ================= SCREEN HEADER ================= */
+/* =================================================
+   SCREEN HEADER (VISIBLE ON SCREEN ONLY)
+================================================= */
 #header-wrap {
-  padding:10px 20px 0;
+  padding:16px 20px 8px;
 }
+
 #header-wrap img {
-  height:70px;
+  height:64px;
 }
+
 #main-title {
   font-size:30px;
   font-weight:700;
@@ -38,7 +42,16 @@ body {
   margin-top:6px;
 }
 
-/* LOCATION BUTTON */
+/* =================================================
+   PRINT HEADER (HIDDEN BY DEFAULT)
+================================================= */
+#printHeader {
+  display:none;
+}
+
+/* =================================================
+   BUTTONS
+================================================= */
 #locationBtn {
   position:fixed;
   right:20px;
@@ -54,7 +67,6 @@ body {
   font-weight:600;
 }
 
-/* PRINT BUTTON */
 #printBtn {
   position:fixed;
   right:20px;
@@ -70,7 +82,9 @@ body {
   font-weight:600;
 }
 
-/* FILTER BAR */
+/* =================================================
+   FILTER BAR
+================================================= */
 #filters {
   position:sticky;
   top:0;
@@ -82,6 +96,7 @@ body {
   gap:10px;
   flex-wrap:wrap;
 }
+
 #filters input,
 #filters select,
 #filters button {
@@ -91,6 +106,7 @@ body {
   font-size:14px;
   min-width:150px;
 }
+
 #filters button {
   background:var(--oh-orange);
   color:white;
@@ -98,11 +114,14 @@ body {
   font-weight:600;
 }
 
-/* DEPARTMENT TITLE */
+/* =================================================
+   TABLE + CONTENT
+================================================= */
 .dept-block {
   margin:28px 0 8px;
   padding:0 20px;
 }
+
 .dept-title {
   font-size:22px;
   font-weight:700;
@@ -111,28 +130,33 @@ body {
   display:inline-block;
 }
 
-/* TABLE */
 .table-wrap {
   padding:0 20px 25px;
 }
+
 table {
   width:100%;
   border-collapse:collapse;
 }
+
 th, td {
   padding:8px 10px;
   border-bottom:1px solid var(--oh-border);
   font-size:14px;
 }
+
 th {
   background:var(--oh-light);
   border-bottom:2px solid var(--oh-orange);
 }
+
 tr:nth-child(even) td {
   background:#fafafa;
 }
 
-/* ================= PRINT ================= */
+/* =================================================
+   PRINT STYLES
+================================================= */
 @media print {
 
   @page {
@@ -147,56 +171,56 @@ tr:nth-child(even) td {
     display:none !important;
   }
 
-  /* ===== PRINT HEADER (REPEATS EVERY PAGE) ===== */
+  /* SHOW print header ONLY during print */
   #printHeader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 24mm;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 6mm 10mm;
-    border-bottom: 2px solid var(--oh-orange);
-    background: white;
-    z-index: 999;
+    display:flex;
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    height:24mm;
+    align-items:center;
+    gap:14px;
+    padding:6mm 10mm;
+    border-bottom:2px solid var(--oh-orange);
+    background:#fff;
+    z-index:999;
   }
 
   #printHeader img {
-    height: 28px;
+    height:28px;
   }
 
   .print-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--oh-orange);
+    font-size:16px;
+    font-weight:700;
+    color:var(--oh-orange);
   }
 
-  /* Push content below header */
+  /* Push content below print header */
   #dosContainer {
-    margin-top: 28mm;
+    margin-top:28mm;
   }
 
   table {
-    font-size: 11px;
+    font-size:11px;
   }
 
   tr {
-    page-break-inside: avoid;
+    page-break-inside:avoid;
   }
 
-  /* ===== PRINT FOOTER ===== */
+  /* PRINT FOOTER */
   body::after {
     content: "OHL BLR Koramangala";
-    position: fixed;
-    bottom: 8mm;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 10px;
-    font-weight: 600;
-    color: #666;
+    position:fixed;
+    bottom:8mm;
+    left:0;
+    right:0;
+    text-align:center;
+    font-size:10px;
+    font-weight:600;
+    color:#666;
   }
 }
 </style>
@@ -204,20 +228,23 @@ tr:nth-child(even) td {
 
 <body>
 
-<!-- ===== PRINT HEADER (PRINT ONLY) ===== -->
+<!-- PRINT HEADER (PRINT ONLY) -->
 <div id="printHeader">
-  <img src="logo.png">
+  <img src="logo.png" alt="Orange Health">
   <div class="print-title">Orange Health – Directory of Services (DOS)</div>
 </div>
 
+<!-- ACTION BUTTONS -->
 <button id="locationBtn">OHL BLR Koramangala</button>
 <button id="printBtn" onclick="window.print()">Print DOS</button>
 
+<!-- SCREEN HEADER -->
 <div id="header-wrap">
-  <img src="logo.png">
+  <img src="logo.png" alt="Orange Health">
   <div id="main-title">Orange Health - Directory of Services (DOS)</div>
 </div>
 
+<!-- FILTERS -->
 <div id="filters">
   <input id="searchBox" placeholder="Search test / investigation / method...">
   <select id="deptFilter"><option value="">Department: All</option></select>
@@ -283,11 +310,11 @@ fetch("data.json")
 
   const tests=Object.values(grouped);
 
-  const depts=[...new Set(tests.map(t=>t.department))].sort();
-  depts.forEach(d=>deptFilter.add(new Option(d,d)));
+  [...new Set(tests.map(t=>t.department))].sort()
+    .forEach(d=>deptFilter.add(new Option(d,d)));
 
-  const cities=[...new Set(tests.map(t=>t.city))].sort();
-  cities.forEach(c=>cityFilter.add(new Option(c,c)));
+  [...new Set(tests.map(t=>t.city))].sort()
+    .forEach(c=>cityFilter.add(new Option(c,c)));
 
   window.applyFilters=function(){
     const q=searchBox.value.toLowerCase();
