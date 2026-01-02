@@ -5,41 +5,33 @@
 <title>Directory of Services – Orange Health Labs</title>
 
 <link rel="icon" href="file.png" type="image/png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root {
-  --oh-orange: #ff6600;
-  --oh-light: #fff7f2;
-  --oh-border: #e3e3e3;
+  --oh-orange:#ff6600;
+  --oh-light:#fff7f2;
+  --oh-border:#e3e3e3;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: Inter, sans-serif;
   margin:0;
   color:#222;
 }
 
 /* ================= SCREEN HEADER ================= */
 #header-wrap {
-  padding:16px 20px 8px;
+  padding:16px 20px;
 }
-#header-wrap img {
-  height:64px;
-}
+#header-wrap img { height:64px; }
 #main-title {
   font-size:30px;
   font-weight:700;
   color:var(--oh-orange);
-  margin-top:6px;
 }
 
-/* ================= PRINT HEADER ================= */
-#printHeader {
-  display:none; /* hidden on screen */
-}
-
-/* ================= BUTTONS ================= */
+/* ================= ACTION BUTTONS ================= */
 #locationBtn {
   position:fixed;
   right:20px;
@@ -51,7 +43,6 @@ body {
   border-radius:6px;
   font-weight:600;
 }
-
 #printBtn {
   position:fixed;
   right:20px;
@@ -93,10 +84,9 @@ body {
   font-weight:600;
 }
 
-/* ================= TABLE ================= */
+/* ================= CONTENT ================= */
 .dept-block {
-  margin:28px 0 8px;
-  padding:0 20px;
+  padding:20px 20px 0;
 }
 .dept-title {
   font-size:22px;
@@ -105,22 +95,29 @@ body {
   border-bottom:3px solid var(--oh-orange);
   display:inline-block;
 }
+
 .table-wrap {
-  padding:0 20px 25px;
+  padding:10px 20px 30px;
 }
+
 table {
   width:100%;
   border-collapse:collapse;
 }
+
 th, td {
-  padding:8px 10px;
+  padding:6px 8px;
   border-bottom:1px solid var(--oh-border);
-  font-size:14px;
+  font-size:13px;
+  vertical-align:top;
 }
+
 th {
   background:var(--oh-light);
   border-bottom:2px solid var(--oh-orange);
+  font-weight:700;
 }
+
 tr:nth-child(even) td {
   background:#fafafa;
 }
@@ -128,36 +125,29 @@ tr:nth-child(even) td {
 /* ================= PRINT ================= */
 @media print {
 
-  /* 🔻 MUCH SMALLER PAGE TOP SPACE */
   @page {
-    margin: 14mm 10mm 18mm 10mm;
+    margin: 12mm;
   }
 
-  /* Hide screen-only UI */
+  /* Hide screen UI */
+  #header-wrap,
   #filters,
   #printBtn,
-  #locationBtn,
-  #header-wrap {
+  #locationBtn {
     display:none !important;
   }
 
-  /* ===== PRINT HEADER (INLINE, COMPACT) ===== */
-  #printHeader {
+  /* ===== PRINT HEADER (NORMAL FLOW) ===== */
+  .print-header {
     display:flex;
-    position:fixed;
-    top:0;
-    left:0;
-    right:0;
-    height:14mm;
     align-items:center;
     gap:10px;
-    padding:4mm 10mm;
+    margin-bottom:6mm;
     border-bottom:2px solid var(--oh-orange);
-    background:#fff;
-    z-index:999;
+    padding-bottom:4mm;
   }
 
-  #printHeader img {
+  .print-header img {
     height:22px;
   }
 
@@ -165,31 +155,29 @@ tr:nth-child(even) td {
     font-size:14px;
     font-weight:700;
     color:var(--oh-orange);
-    white-space:nowrap;
   }
 
-  /* Push content just below header */
-  #dosContainer {
-    margin-top:16mm;
-  }
-
-  table {
-    font-size:11px;
+  /* Repeat table headers correctly */
+  thead {
+    display: table-header-group;
   }
 
   tr {
     page-break-inside:avoid;
   }
 
-  /* ===== PRINT FOOTER ===== */
-  body::after {
-    content: "OHL BLR Koramangala";
+  table {
+    font-size:11px;
+  }
+
+  /* Footer */
+  .print-footer {
     position:fixed;
-    bottom:6mm;
+    bottom:8mm;
     left:0;
     right:0;
     text-align:center;
-    font-size:10px;
+    font-size:9px;
     font-weight:600;
     color:#666;
   }
@@ -200,10 +188,12 @@ tr:nth-child(even) td {
 <body>
 
 <!-- PRINT HEADER -->
-<div id="printHeader">
+<div class="print-header">
   <img src="logo.png" alt="Orange Health">
   <div class="print-title">Orange Health – Directory of Services (DOS)</div>
 </div>
+
+<div class="print-footer">OHL BLR Koramangala</div>
 
 <button id="locationBtn">OHL BLR Koramangala</button>
 <button id="printBtn" onclick="window.print()">Print DOS</button>
@@ -214,6 +204,7 @@ tr:nth-child(even) td {
   <div id="main-title">Orange Health - Directory of Services (DOS)</div>
 </div>
 
+<!-- FILTERS -->
 <div id="filters">
   <input id="searchBox" placeholder="Search test / investigation / method...">
   <select id="deptFilter"><option value="">Department: All</option></select>
