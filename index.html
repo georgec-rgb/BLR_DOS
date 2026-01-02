@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <title>Directory of Services – Orange Health Labs</title>
 
-<!-- Favicon -->
 <link rel="icon" href="file.png" type="image/png">
-
-<!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -19,22 +16,17 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background:#ffffff;
   margin:0;
   color:#222;
 }
 
-/* =================================================
-   SCREEN HEADER (VISIBLE ON SCREEN ONLY)
-================================================= */
+/* ================= SCREEN HEADER ================= */
 #header-wrap {
   padding:16px 20px 8px;
 }
-
 #header-wrap img {
   height:64px;
 }
-
 #main-title {
   font-size:30px;
   font-weight:700;
@@ -42,28 +34,21 @@ body {
   margin-top:6px;
 }
 
-/* =================================================
-   PRINT HEADER (HIDDEN BY DEFAULT)
-================================================= */
+/* ================= PRINT HEADER ================= */
 #printHeader {
-  display:none;
+  display:none; /* hidden on screen */
 }
 
-/* =================================================
-   BUTTONS
-================================================= */
+/* ================= BUTTONS ================= */
 #locationBtn {
   position:fixed;
   right:20px;
   top:50px;
-  z-index:1000;
   background:#333;
+  color:#fff;
   border:none;
   padding:8px 14px;
   border-radius:6px;
-  color:#fff;
-  cursor:pointer;
-  font-size:14px;
   font-weight:600;
 }
 
@@ -71,24 +56,18 @@ body {
   position:fixed;
   right:20px;
   top:90px;
-  z-index:1000;
   background:var(--oh-orange);
+  color:#fff;
   border:none;
   padding:8px 14px;
   border-radius:6px;
-  color:#fff;
-  cursor:pointer;
-  font-size:14px;
   font-weight:600;
 }
 
-/* =================================================
-   FILTER BAR
-================================================= */
+/* ================= FILTER BAR ================= */
 #filters {
   position:sticky;
   top:0;
-  z-index:900;
   background:#fff;
   border-bottom:2px solid var(--oh-orange);
   padding:12px 20px;
@@ -114,14 +93,11 @@ body {
   font-weight:600;
 }
 
-/* =================================================
-   TABLE + CONTENT
-================================================= */
+/* ================= TABLE ================= */
 .dept-block {
   margin:28px 0 8px;
   padding:0 20px;
 }
-
 .dept-title {
   font-size:22px;
   font-weight:700;
@@ -129,38 +105,32 @@ body {
   border-bottom:3px solid var(--oh-orange);
   display:inline-block;
 }
-
 .table-wrap {
   padding:0 20px 25px;
 }
-
 table {
   width:100%;
   border-collapse:collapse;
 }
-
 th, td {
   padding:8px 10px;
   border-bottom:1px solid var(--oh-border);
   font-size:14px;
 }
-
 th {
   background:var(--oh-light);
   border-bottom:2px solid var(--oh-orange);
 }
-
 tr:nth-child(even) td {
   background:#fafafa;
 }
 
-/* =================================================
-   PRINT STYLES
-================================================= */
+/* ================= PRINT ================= */
 @media print {
 
+  /* 🔻 MUCH SMALLER PAGE TOP SPACE */
   @page {
-    margin: 28mm 10mm 22mm 10mm;
+    margin: 14mm 10mm 18mm 10mm;
   }
 
   /* Hide screen-only UI */
@@ -171,35 +141,36 @@ tr:nth-child(even) td {
     display:none !important;
   }
 
-  /* SHOW print header ONLY during print */
+  /* ===== PRINT HEADER (INLINE, COMPACT) ===== */
   #printHeader {
     display:flex;
     position:fixed;
     top:0;
     left:0;
     right:0;
-    height:24mm;
+    height:14mm;
     align-items:center;
-    gap:14px;
-    padding:6mm 10mm;
+    gap:10px;
+    padding:4mm 10mm;
     border-bottom:2px solid var(--oh-orange);
     background:#fff;
     z-index:999;
   }
 
   #printHeader img {
-    height:28px;
+    height:22px;
   }
 
   .print-title {
-    font-size:16px;
+    font-size:14px;
     font-weight:700;
     color:var(--oh-orange);
+    white-space:nowrap;
   }
 
-  /* Push content below print header */
+  /* Push content just below header */
   #dosContainer {
-    margin-top:28mm;
+    margin-top:16mm;
   }
 
   table {
@@ -210,11 +181,11 @@ tr:nth-child(even) td {
     page-break-inside:avoid;
   }
 
-  /* PRINT FOOTER */
+  /* ===== PRINT FOOTER ===== */
   body::after {
     content: "OHL BLR Koramangala";
     position:fixed;
-    bottom:8mm;
+    bottom:6mm;
     left:0;
     right:0;
     text-align:center;
@@ -228,13 +199,12 @@ tr:nth-child(even) td {
 
 <body>
 
-<!-- PRINT HEADER (PRINT ONLY) -->
+<!-- PRINT HEADER -->
 <div id="printHeader">
   <img src="logo.png" alt="Orange Health">
   <div class="print-title">Orange Health – Directory of Services (DOS)</div>
 </div>
 
-<!-- ACTION BUTTONS -->
 <button id="locationBtn">OHL BLR Koramangala</button>
 <button id="printBtn" onclick="window.print()">Print DOS</button>
 
@@ -244,7 +214,6 @@ tr:nth-child(even) td {
   <div id="main-title">Orange Health - Directory of Services (DOS)</div>
 </div>
 
-<!-- FILTERS -->
 <div id="filters">
   <input id="searchBox" placeholder="Search test / investigation / method...">
   <select id="deptFilter"><option value="">Department: All</option></select>
