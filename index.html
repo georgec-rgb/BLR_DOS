@@ -24,6 +24,20 @@ body {
   color:#222;
 }
 
+/* ================= SCREEN HEADER ================= */
+#header-wrap {
+  padding:10px 20px 0;
+}
+#header-wrap img {
+  height:70px;
+}
+#main-title {
+  font-size:30px;
+  font-weight:700;
+  color:var(--oh-orange);
+  margin-top:6px;
+}
+
 /* LOCATION BUTTON */
 #locationBtn {
   position:fixed;
@@ -39,7 +53,6 @@ body {
   font-size:14px;
   font-weight:600;
 }
-#locationBtn:hover { opacity:.9; }
 
 /* PRINT BUTTON */
 #printBtn {
@@ -55,21 +68,6 @@ body {
   cursor:pointer;
   font-size:14px;
   font-weight:600;
-}
-#printBtn:hover { opacity:.9; }
-
-/* HEADER */
-#header-wrap {
-  padding:10px 20px 0;
-}
-#header-wrap img {
-  height:70px;
-}
-#main-title {
-  font-size:30px;
-  font-weight:700;
-  color:var(--oh-orange);
-  margin-top:6px;
 }
 
 /* FILTER BAR */
@@ -97,7 +95,6 @@ body {
   background:var(--oh-orange);
   color:white;
   border:none;
-  cursor:pointer;
   font-weight:600;
 }
 
@@ -105,7 +102,6 @@ body {
 .dept-block {
   margin:28px 0 8px;
   padding:0 20px;
-  width:100%;
 }
 .dept-title {
   font-size:22px;
@@ -113,68 +109,37 @@ body {
   color:var(--oh-orange);
   border-bottom:3px solid var(--oh-orange);
   display:inline-block;
-  padding-bottom:3px;
-}
-
-/* TABLE AREA */
-.table-wrap {
-  width:100%;
-  margin:0 0 25px;
-  padding:0 20px;
-  box-sizing:border-box;
 }
 
 /* TABLE */
+.table-wrap {
+  padding:0 20px 25px;
+}
 table {
   width:100%;
   border-collapse:collapse;
 }
-
 th, td {
   padding:8px 10px;
   border-bottom:1px solid var(--oh-border);
   font-size:14px;
-  vertical-align:top;
-  white-space:normal;
-  word-wrap:break-word;
 }
-
 th {
   background:var(--oh-light);
   border-bottom:2px solid var(--oh-orange);
-  font-weight:700;
-  color:#444;
-  text-align:left;
 }
-
-th:nth-child(1), td:nth-child(1),
-th:nth-child(7), td:nth-child(7),
-th:nth-child(8), td:nth-child(8),
-th:nth-child(9), td:nth-child(9),
-th:nth-child(10), td:nth-child(10),
-th:nth-child(13), td:nth-child(13){
-  width:60px;
-  text-align:center;
-}
-
 tr:nth-child(even) td {
   background:#fafafa;
 }
 
-/* ================= PRINT FIX ================= */
+/* ================= PRINT ================= */
 @media print {
 
-  /* Page margins */
   @page {
-    margin: 12mm 10mm 18mm 10mm;
+    margin: 28mm 10mm 22mm 10mm;
   }
 
-  body {
-    margin:0;
-    padding:0;
-  }
-
-  /* Hide UI */
+  /* Hide screen-only UI */
   #filters,
   #printBtn,
   #locationBtn,
@@ -182,25 +147,50 @@ tr:nth-child(even) td {
     display:none !important;
   }
 
+  /* ===== PRINT HEADER (REPEATS EVERY PAGE) ===== */
+  #printHeader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 24mm;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 6mm 10mm;
+    border-bottom: 2px solid var(--oh-orange);
+    background: white;
+    z-index: 999;
+  }
+
+  #printHeader img {
+    height: 28px;
+  }
+
+  .print-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--oh-orange);
+  }
+
+  /* Push content below header */
+  #dosContainer {
+    margin-top: 28mm;
+  }
+
   table {
-    font-size:11px;
-    page-break-inside:auto;
+    font-size: 11px;
   }
 
   tr {
-    page-break-inside:avoid;
-    page-break-after:auto;
+    page-break-inside: avoid;
   }
 
-  th {
-    position:static;
-  }
-
-  /* ✅ CUSTOM FOOTER (replaces URL) */
+  /* ===== PRINT FOOTER ===== */
   body::after {
     content: "OHL BLR Koramangala";
     position: fixed;
-    bottom: 6mm;
+    bottom: 8mm;
     left: 0;
     right: 0;
     text-align: center;
@@ -213,6 +203,12 @@ tr:nth-child(even) td {
 </head>
 
 <body>
+
+<!-- ===== PRINT HEADER (PRINT ONLY) ===== -->
+<div id="printHeader">
+  <img src="logo.png">
+  <div class="print-title">Orange Health – Directory of Services (DOS)</div>
+</div>
 
 <button id="locationBtn">OHL BLR Koramangala</button>
 <button id="printBtn" onclick="window.print()">Print DOS</button>
@@ -239,10 +235,7 @@ tr:nth-child(even) td {
 <script>
 function formatFrequency(freq){
   const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  return String(freq).split("")
-    .map((v,i)=>v==="1"?days[i]:"")
-    .filter(Boolean)
-    .join(" ");
+  return String(freq).split("").map((v,i)=>v==="1"?days[i]:"").filter(Boolean).join(" ");
 }
 
 function resetFilters(){
@@ -259,7 +252,7 @@ fetch("data.json")
   const grouped={};
 
   data.forEach(row=>{
-    if(String(row.status).trim().toLowerCase()!=="yes") return;
+    if(String(row.status).toLowerCase()!=="yes") return;
     const id=row.orange_test_id;
 
     if(!grouped[id]){
