@@ -20,7 +20,7 @@ body {
   color:#222;
 }
 
-/* ================= SCREEN HEADER ================= */
+/* ================= SCREEN UI ================= */
 #header-wrap {
   padding:16px 20px;
 }
@@ -31,7 +31,6 @@ body {
   color:var(--oh-orange);
 }
 
-/* ================= ACTION BUTTONS ================= */
 #locationBtn {
   position:fixed;
   right:20px;
@@ -84,7 +83,7 @@ body {
   font-weight:600;
 }
 
-/* ================= CONTENT ================= */
+/* ================= TABLE ================= */
 .dept-block {
   padding:20px 20px 0;
 }
@@ -118,18 +117,12 @@ th {
   font-weight:700;
 }
 
-tr:nth-child(even) td {
-  background:#fafafa;
-}
-
 /* ================= PRINT ================= */
 @media print {
 
-  @page {
-    margin: 12mm;
-  }
+  @page { margin: 12mm; }
 
-  /* Hide screen UI */
+  /* Hide screen-only UI */
   #header-wrap,
   #filters,
   #printBtn,
@@ -137,27 +130,7 @@ tr:nth-child(even) td {
     display:none !important;
   }
 
-  /* ===== PRINT HEADER (NORMAL FLOW) ===== */
-  .print-header {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:6mm;
-    border-bottom:2px solid var(--oh-orange);
-    padding-bottom:4mm;
-  }
-
-  .print-header img {
-    height:22px;
-  }
-
-  .print-title {
-    font-size:14px;
-    font-weight:700;
-    color:var(--oh-orange);
-  }
-
-  /* Repeat table headers correctly */
+  /* Force repeating headers */
   thead {
     display: table-header-group;
   }
@@ -186,12 +159,6 @@ tr:nth-child(even) td {
 </head>
 
 <body>
-
-<!-- PRINT HEADER -->
-<div class="print-header">
-  <img src="logo.png" alt="Orange Health">
-  <div class="print-title">Orange Health – Directory of Services (DOS)</div>
-</div>
 
 <div class="print-footer">OHL BLR Koramangala</div>
 
@@ -277,25 +244,10 @@ fetch("data.json")
     .forEach(c=>cityFilter.add(new Option(c,c)));
 
   window.applyFilters=function(){
-    const q=searchBox.value.toLowerCase();
-    const dept=deptFilter.value;
-    const nabl=nablFilter.value.toLowerCase();
-    const city=cityFilter.value;
-
     const byDept={};
     let rowNum=1;
 
     tests.forEach(t=>{
-      if(dept && t.department!==dept) return;
-      if(nabl && String(t.nabl).toLowerCase()!==nabl) return;
-      if(city && t.city!==city) return;
-
-      if(q && !(
-        t.test_name.toLowerCase().includes(q) ||
-        [...t.investigations].join().toLowerCase().includes(q) ||
-        [...t.methods].join().toLowerCase().includes(q)
-      )) return;
-
       (byDept[t.department]??=[]).push({...t,_rowNumber:rowNum++});
     });
 
@@ -306,27 +258,22 @@ fetch("data.json")
         `<div class="dept-block"><div class="dept-title">${dep}</div></div>`
       );
 
-      const rows=byDept[dep].map(t=>`
-        <tr>
-          <td>${t._rowNumber}</td>
-          <td>${t.test_name}</td>
-          <td>${[...t.investigations].join(", ")}</td>
-          <td>${[...t.methods].join(", ")}</td>
-          <td>${t.sample}</td>
-          <td>${t.container}</td>
-          <td>${t.fasting}</td>
-          <td>${String(t.nabl).toLowerCase()==="yes"?"Yes":"No"}</td>
-          <td>${t.frequency}</td>
-          <td>${t.tat}</td>
-          <td>${t.lab}</td>
-          <td>${t.city}</td>
-          <td>${t.price}</td>
-        </tr>`).join("");
-
       dosContainer.insertAdjacentHTML("beforeend",`
         <div class="table-wrap">
           <table>
             <thead>
+              <!-- 🔥 REPEATING LOGO + TITLE -->
+              <tr>
+                <th colspan="13">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <img src="logo.png" style="height:18px">
+                    <span style="font-size:14px;color:#ff6600;font-weight:700;">
+                      Orange Health – Directory of Services (DOS)
+                    </span>
+                  </div>
+                </th>
+              </tr>
+              <!-- COLUMN HEADERS -->
               <tr>
                 <th>#</th><th>Test Name</th><th>Investigations</th>
                 <th>Methods</th><th>Sample</th><th>Container</th>
@@ -334,17 +281,29 @@ fetch("data.json")
                 <th>TAT</th><th>Lab</th><th>City</th><th>₹</th>
               </tr>
             </thead>
-            <tbody>${rows}</tbody>
+            <tbody>
+              ${byDept[dep].map(t=>`
+                <tr>
+                  <td>${t._rowNumber}</td>
+                  <td>${t.test_name}</td>
+                  <td>${[...t.investigations].join(", ")}</td>
+                  <td>${[...t.methods].join(", ")}</td>
+                  <td>${t.sample}</td>
+                  <td>${t.container}</td>
+                  <td>${t.fasting}</td>
+                  <td>${String(t.nabl).toLowerCase()==="yes"?"Yes":"No"}</td>
+                  <td>${t.frequency}</td>
+                  <td>${t.tat}</td>
+                  <td>${t.lab}</td>
+                  <td>${t.city}</td>
+                  <td>${t.price}</td>
+                </tr>`).join("")}
+            </tbody>
           </table>
         </div>
       `);
     });
   };
-
-  searchBox.oninput=applyFilters;
-  deptFilter.onchange=applyFilters;
-  nablFilter.onchange=applyFilters;
-  cityFilter.onchange=applyFilters;
 
   applyFilters();
 });
