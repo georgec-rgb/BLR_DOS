@@ -20,7 +20,7 @@ body {
   color:#222;
 }
 
-/* ================= SCREEN UI ================= */
+/* ================= HEADER ================= */
 #header-wrap {
   padding:16px 20px;
 }
@@ -31,6 +31,7 @@ body {
   color:var(--oh-orange);
 }
 
+/* ================= FLOATING BUTTONS ================= */
 #locationBtn {
   position:fixed;
   right:20px;
@@ -64,6 +65,7 @@ body {
   display:flex;
   gap:10px;
   flex-wrap:wrap;
+  z-index:10;
 }
 
 #filters input,
@@ -162,7 +164,7 @@ th {
 <button id="locationBtn">OHL BLR Koramangala</button>
 <button id="printBtn" onclick="window.print()">Print DOS</button>
 
-<!-- SCREEN HEADER -->
+<!-- HEADER -->
 <div id="header-wrap">
   <img src="logo.png" alt="Orange Health">
   <div id="main-title">Orange Health – Directory of Services (DOS)</div>
@@ -171,13 +173,17 @@ th {
 <!-- FILTERS -->
 <div id="filters">
   <input id="searchBox" placeholder="Search test / investigation / method...">
-  <select id="deptFilter"><option value="">Department: All</option></select>
+  <select id="deptFilter">
+    <option value="">Department: All</option>
+  </select>
   <select id="nablFilter">
     <option value="">NABL: All</option>
     <option value="yes">NABL: Yes</option>
     <option value="no">NABL: No</option>
   </select>
-  <select id="cityFilter"><option value="">City: All</option></select>
+  <select id="cityFilter">
+    <option value="">City: All</option>
+  </select>
   <button onclick="resetFilters()">Reset</button>
 </div>
 
@@ -208,37 +214,38 @@ fetch("data.json")
   data.forEach(row=>{
     if(String(row.status).toLowerCase()!=="yes") return;
 
-    const id = row.orange_test_id;
+    const id=row.orange_test_id;
 
     if(!grouped[id]){
-      grouped[id] = {
-        test_name: row.test_name,
-        department: row.department,
-        investigations: new Set(),
-        methods: new Set(),
-        sample: row.sample_name,
-        container: row.vial_type,
-        fasting: row.is_fasting_required,
-        nabl: false,  // ✅ FIX: initialize as false
-        frequency: formatFrequency(row.testing_frequency),
-        tat: row.lab_tat,
-        lab: row.lab_name,
-        city: row.city,
-        price: row.price
+      grouped[id]={
+        test_name:row.test_name,
+        department:row.department,
+        investigations:new Set(),
+        methods:new Set(),
+        sample:row.sample_name,
+        container:row.vial_type,
+        fasting:row.is_fasting_required,
+        nabl:false,   // ✅ FIXED
+        frequency:formatFrequency(row.testing_frequency),
+        tat:row.lab_tat,
+        lab:row.lab_name,
+        city:row.city,
+        price:row.price
       };
     }
 
-    // ✅ FIX: aggregate NABL (ANY yes → yes)
+    // ✅ NABL aggregation (ANY Yes → Yes)
     grouped[id].nabl =
       grouped[id].nabl ||
-      String(row.is_nabl_accredited).toLowerCase() === "yes";
+      String(row.is_nabl_accredited).toLowerCase()==="yes";
 
-    const inv = row.investigation_name?.trim() || row.test_name;
-    grouped[id].investigations.add(inv);
+    grouped[id].investigations.add(
+      row.investigation_name?.trim() || row.test_name
+    );
     grouped[id].methods.add(row.method_description || row.name);
   });
 
-  const tests = Object.values(grouped);
+  const tests=Object.values(grouped);
 
   [...new Set(tests.map(t=>t.department))].sort()
     .forEach(d=>deptFilter.add(new Option(d,d)));
@@ -246,18 +253,35 @@ fetch("data.json")
   [...new Set(tests.map(t=>t.city))].sort()
     .forEach(c=>cityFilter.add(new Option(c,c)));
 
-  window.applyFilters = function(){
-    const byDept = {};
-    let rowNum = 1;
+  window.applyFilters=function(){
+    const byDept={};
+    let rowNum=1;
+    const q=searchBox.value.trim().toLowerCase();
 
     tests.forEach(t=>{
+      // 🔍 SEARCH
+      if(q){
+        const haystack=`
+          ${t.test_name}
+          ${[...t.investigations].join(" ")}
+          ${[...t.methods].join(" ")}
+        `.toLowerCase();
+        if(!haystack.includes(q)) return;
+      }
+
+      // 🏥 DEPT
       if(deptFilter.value && t.department!==deptFilter.value) return;
+
+      // 🏙 CITY
       if(cityFilter.value && t.city!==cityFilter.value) return;
+
+      // 🧪 NABL
       if(nablFilter.value){
         if(nablFilter.value==="yes" && !t.nabl) return;
         if(nablFilter.value==="no" && t.nabl) return;
       }
-      (byDept[t.department] ??= []).push({...t,_rowNumber:rowNum++});
+
+      (byDept[t.department]??=[]).push({...t,_rowNumber:rowNum++});
     });
 
     dosContainer.innerHTML="";
@@ -298,7 +322,7 @@ fetch("data.json")
                   <td>${t.sample}</td>
                   <td>${t.container}</td>
                   <td>${t.fasting}</td>
-                  <td>${t.nabl ? "Yes" : "No"}</td>
+                  <td>${t.nabl?"Yes":"No"}</td>
                   <td>${t.frequency}</td>
                   <td>${t.tat}</td>
                   <td>${t.lab}</td>
@@ -311,6 +335,12 @@ fetch("data.json")
       `);
     });
   };
+
+  // ✅ FILTER EVENT BINDINGS
+  searchBox.addEventListener("input", applyFilters);
+  deptFilter.addEventListener("change", applyFilters);
+  nablFilter.addEventListener("change", applyFilters);
+  cityFilter.addEventListener("change", applyFilters);
 
   applyFilters();
 });
