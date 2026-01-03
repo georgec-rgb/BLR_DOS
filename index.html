@@ -122,7 +122,6 @@ th {
 
   @page { margin: 12mm; }
 
-  /* Hide screen-only UI */
   #header-wrap,
   #filters,
   #printBtn,
@@ -130,7 +129,6 @@ th {
     display:none !important;
   }
 
-  /* Force repeating headers */
   thead {
     display: table-header-group;
   }
@@ -143,7 +141,6 @@ th {
     font-size:11px;
   }
 
-  /* Footer */
   .print-footer {
     position:fixed;
     bottom:8mm;
@@ -168,7 +165,7 @@ th {
 <!-- SCREEN HEADER -->
 <div id="header-wrap">
   <img src="logo.png" alt="Orange Health">
-  <div id="main-title">Orange Health - Directory of Services (DOS)</div>
+  <div id="main-title">Orange Health – Directory of Services (DOS)</div>
 </div>
 
 <!-- FILTERS -->
@@ -189,7 +186,10 @@ th {
 <script>
 function formatFrequency(freq){
   const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  return String(freq).split("").map((v,i)=>v==="1"?days[i]:"").filter(Boolean).join(" ");
+  return String(freq).split("")
+    .map((v,i)=>v==="1"?days[i]:"")
+    .filter(Boolean)
+    .join(" ");
 }
 
 function resetFilters(){
@@ -207,35 +207,38 @@ fetch("data.json")
 
   data.forEach(row=>{
     if(String(row.status).toLowerCase()!=="yes") return;
-    const id=row.orange_test_id;
+
+    const id = row.orange_test_id;
 
     if(!grouped[id]){
-      grouped[id]={
-        test_name:row.test_name,
-        department:row.department,
-        investigations:new Set(),
-        methods:new Set(),
-        sample:row.sample_name,
-        container:row.vial_type,
-        fasting:row.is_fasting_required,
-        nabl:row.is_nabl_accredited,
-        frequency:formatFrequency(row.testing_frequency),
-        tat:row.lab_tat,
-        lab:row.lab_name,
-        city:row.city,
-        price:row.price
+      grouped[id] = {
+        test_name: row.test_name,
+        department: row.department,
+        investigations: new Set(),
+        methods: new Set(),
+        sample: row.sample_name,
+        container: row.vial_type,
+        fasting: row.is_fasting_required,
+        nabl: false,  // ✅ FIX: initialize as false
+        frequency: formatFrequency(row.testing_frequency),
+        tat: row.lab_tat,
+        lab: row.lab_name,
+        city: row.city,
+        price: row.price
       };
     }
 
-    const inv = row.investigation_name && row.investigation_name.trim()
-      ? row.investigation_name
-      : row.test_name;
+    // ✅ FIX: aggregate NABL (ANY yes → yes)
+    grouped[id].nabl =
+      grouped[id].nabl ||
+      String(row.is_nabl_accredited).toLowerCase() === "yes";
 
+    const inv = row.investigation_name?.trim() || row.test_name;
     grouped[id].investigations.add(inv);
     grouped[id].methods.add(row.method_description || row.name);
   });
 
-  const tests=Object.values(grouped);
+  const tests = Object.values(grouped);
 
   [...new Set(tests.map(t=>t.department))].sort()
     .forEach(d=>deptFilter.add(new Option(d,d)));
@@ -243,12 +246,18 @@ fetch("data.json")
   [...new Set(tests.map(t=>t.city))].sort()
     .forEach(c=>cityFilter.add(new Option(c,c)));
 
-  window.applyFilters=function(){
-    const byDept={};
-    let rowNum=1;
+  window.applyFilters = function(){
+    const byDept = {};
+    let rowNum = 1;
 
     tests.forEach(t=>{
-      (byDept[t.department]??=[]).push({...t,_rowNumber:rowNum++});
+      if(deptFilter.value && t.department!==deptFilter.value) return;
+      if(cityFilter.value && t.city!==cityFilter.value) return;
+      if(nablFilter.value){
+        if(nablFilter.value==="yes" && !t.nabl) return;
+        if(nablFilter.value==="no" && t.nabl) return;
+      }
+      (byDept[t.department] ??= []).push({...t,_rowNumber:rowNum++});
     });
 
     dosContainer.innerHTML="";
@@ -262,7 +271,6 @@ fetch("data.json")
         <div class="table-wrap">
           <table>
             <thead>
-              <!-- 🔥 REPEATING LOGO + TITLE -->
               <tr>
                 <th colspan="13">
                   <div style="display:flex;align-items:center;gap:10px;">
@@ -273,7 +281,6 @@ fetch("data.json")
                   </div>
                 </th>
               </tr>
-              <!-- COLUMN HEADERS -->
               <tr>
                 <th>#</th><th>Test Name</th><th>Investigations</th>
                 <th>Methods</th><th>Sample</th><th>Container</th>
@@ -291,7 +298,7 @@ fetch("data.json")
                   <td>${t.sample}</td>
                   <td>${t.container}</td>
                   <td>${t.fasting}</td>
-                  <td>${String(t.nabl).toLowerCase()==="yes"?"Yes":"No"}</td>
+                  <td>${t.nabl ? "Yes" : "No"}</td>
                   <td>${t.frequency}</td>
                   <td>${t.tat}</td>
                   <td>${t.lab}</td>
